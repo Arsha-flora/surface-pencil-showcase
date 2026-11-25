@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Surface Pencil scroll tracker</title><style>html,body{margin:0;width:100%;height:100%;overflow:hidden}#markers{position:relative;height:100%;width:100%}i{position:absolute;display:block;left:0;width:100%;pointer-events:none}</style></head><body><div id="markers" aria-hidden="true"></div><script>
+'use strict';
+const channel=new BroadcastChannel('arsha-surface-pencil-scroll-tour-v1');
+const markerRoot=document.getElementById('markers');
+const STEPS=6, PIN_HEIGHT=600, STRIP=48, PIN_TOP=16;
+const visible=new Map();
+let observer, current=0;
+function send(){channel.postMessage({type:'surface-pencil-step',index:current});}
+channel.onmessage=({data})=>{if(data?.type==='surface-pencil-ready')send();};
+function update(){
+ if(!visible.size)return;
+ const lo=Math.min(...visible.values());
+ const travel=Math.max(1,markerRoot.clientHeight-PIN_HEIGHT);
+ const progress=Math.max(0,Math.min(1,(lo+PIN_TOP)/travel));
+ const next=Math.min(STEPS-1,Math.floor(progress*STEPS));
+ if(next!==current){current=next;send();}
+}
+function setup(){
+ if(observer)observer.disconnect();visible.clear();markerRoot.replaceChildren();
+ const h=markerRoot.clientHeight, frag=document.createDocumentFragment();
+ for(let y=0;y<h;y+=STRIP){const e=document.createElement('i');e.dataset.y=y;e.style.top=y+'px';e.style.height=Math.min(STRIP,h-y)+'px';frag.append(e);}
+ markerRoot.append(frag);
+ observer=new IntersectionObserver(entries=>{
+   for(const e of entries){const y=+e.target.dataset.y;if(e.isIntersecting&&e.intersectionRect.height>0&&e.intersectionRect.width>0)visible.set(y,y+e.intersectionRect.top-e.boundingClientRect.top);else visible.delete(y);}
+   update();
+ },{threshold:[0,.25,.5,.75,1]});
+ for(const e of markerRoot.children)observer.observe(e);
+ send();
+}
+window.addEventListener('resize',setup);setup();
+</script></body></html>
