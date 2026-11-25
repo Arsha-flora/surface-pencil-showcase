@@ -1,107 +1,780 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#080d0a">
-  <title>Surface Pencil | Arsha Flora</title>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Surface Pencil — Scroll Demo</title>
   <style>
-    * {
-      box-sizing: border-box;
+    :root {
+      --bg: #060b08;
+      --panel: #0f1712;
+      --panel-2: #131e18;
+      --text: #ecf3ea;
+      --muted: #a9baaf;
+      --line: rgba(128, 180, 132, 0.22);
+      --accent: #8eff6d;
+      --accent-soft: rgba(142, 255, 109, 0.18);
+      --accent-strong: rgba(142, 255, 109, 0.92);
+      --wire: #ff4b4b;
+      --wire-soft: rgba(255, 75, 75, 0.18);
+      --wire-line: rgba(255, 101, 101, 0.28);
+      --shadow: 0 25px 90px rgba(0, 0, 0, 0.45);
+      --img-tilt-x: 0deg;
+      --img-tilt-y: 0deg;
+      --img-tilt-z: 0deg;
+      --dot-x: 50%;
+      --dot-y: 20%;
+      --ui-accent: var(--accent);
+      --ui-accent-soft: var(--accent-soft);
+      --ui-line: var(--line);
     }
 
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
       margin: 0;
-      min-height: 100vh;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(102,255,102,0.09), transparent 26%),
+        radial-gradient(circle at 90% 20%, rgba(70,110,255,0.05), transparent 25%),
+        linear-gradient(180deg, #071009 0%, #050806 40%, #050806 100%);
+      color: var(--text);
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      overflow-x: hidden;
+    }
+
+    body.wire-mode {
+      background:
+        radial-gradient(circle at 80% 20%, rgba(255, 78, 78, 0.09), transparent 24%),
+        radial-gradient(circle at 12% 14%, rgba(102,255,102,0.05), transparent 22%),
+        linear-gradient(180deg, #0a0d09 0%, #080606 44%, #080606 100%);
+      --ui-accent: var(--wire);
+      --ui-accent-soft: var(--wire-soft);
+      --ui-line: var(--wire-line);
+    }
+
+    .page-shell {
+      width: min(1420px, calc(100% - 48px));
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(320px, 0.92fr) minmax(360px, 0.98fr);
+      gap: 42px;
+      align-items: start;
+      padding: 36px 0 140px;
+      position: relative;
+    }
+
+    .story-col { position: relative; z-index: 2; }
+    .visual-col { position: relative; z-index: 1; }
+
+    .eyebrow {
+      color: var(--ui-accent);
+      font-size: 12px;
+      letter-spacing: 2.8px;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+
+    .step {
+      min-height: 110vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+
+    .step.scatter-step { min-height: 230vh; }
+
+    .copy-card {
+      width: min(100%, 620px);
+      background: linear-gradient(180deg, rgba(15,23,18,0.92), rgba(10,16,12,0.84));
+      border: 1px solid var(--ui-line);
+      border-radius: 30px;
+      padding: 34px 32px 32px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+      transition: border-color 0.35s ease, box-shadow 0.35s ease, transform 0.35s ease;
+    }
+
+    .copy-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 35px 110px rgba(0, 0, 0, 0.48);
+    }
+
+    .copy-card h1,
+    .copy-card h2 {
+      margin: 0 0 16px;
+      line-height: 0.98;
+      letter-spacing: -0.04em;
+      font-weight: 800;
+    }
+
+    .copy-card h1 {
+      font-size: clamp(50px, 7vw, 84px);
+    }
+
+    .copy-card h2 {
+      font-size: clamp(34px, 4vw, 58px);
+    }
+
+    .copy-card h1 .accent,
+    .copy-card h2 .accent { color: var(--ui-accent); }
+
+    .copy-card p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      line-height: 1.88;
+      font-size: 17px;
+    }
+
+    .feature-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .feature-pill {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+      color: #dbe9d9;
+      font-size: 15px;
+    }
+
+    .feature-pill .bullet {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--ui-accent);
+      box-shadow: 0 0 0 7px var(--ui-accent-soft), 0 0 16px var(--ui-accent);
+      flex: 0 0 auto;
+    }
+
+    .mini-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--ui-line);
+      background: rgba(255,255,255,0.03);
+      color: #dce6da;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 18px;
+    }
+
+    .mini-badge::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--ui-accent);
+      box-shadow: 0 0 14px var(--ui-accent);
+    }
+
+    .sticky-wrap {
+      position: sticky;
+      top: 36px;
+      min-height: calc(100vh - 72px);
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(
-        circle at center,
-        #1c321b 0%,
-        #080d0a 70%
-      );
-      color: #edf3e9;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 24px;
     }
 
-    .card {
+    .visual-frame {
+      width: min(100%, 620px);
+      position: relative;
+      padding: 28px;
+      border-radius: 34px;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(142,255,109,0.12), transparent 30%),
+        linear-gradient(180deg, rgba(18,26,20,0.98), rgba(7,10,8,0.94));
+      border: 1px solid var(--ui-line);
+      box-shadow: 0 30px 120px rgba(0,0,0,0.48);
+      overflow: hidden;
+      transition: border-color 0.35s ease, background 0.35s ease;
+    }
+
+    .visual-frame::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.05), transparent 45%, rgba(255,255,255,0.02));
+      pointer-events: none;
+    }
+
+    .visual-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .visual-topbar .left,
+    .visual-topbar .right {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .dot-ui {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.22);
+    }
+
+    .window-pill {
+      padding: 9px 14px;
+      border-radius: 999px;
+      color: #d6e5d4;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.06);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .image-stage {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      perspective: 1600px;
+      min-height: 720px;
+    }
+
+    .panel-image {
+      position: relative;
+      width: 72%;
+      max-width: 430px;
+      border-radius: 22px;
+      overflow: hidden;
+      transform-style: preserve-3d;
+      transform:
+        rotateX(var(--img-tilt-x))
+        rotateY(var(--img-tilt-y))
+        rotateZ(var(--img-tilt-z))
+        translateZ(0);
+      transition: transform 0.45s ease, filter 0.35s ease;
+      box-shadow:
+        0 38px 90px rgba(0,0,0,0.44),
+        0 0 0 1px rgba(255,255,255,0.06);
+      filter: saturate(1.02);
+      background: #141414;
+    }
+
+    .panel-image img {
+      display: block;
       width: 100%;
-      max-width: 750px;
-      padding: 65px 35px;
-      background: #101911;
-      border: 1px solid #385634;
-      border-radius: 24px;
-      box-shadow: 0 25px 80px #0008;
+      height: auto;
     }
 
-    .badge {
+    .highlight-dot {
+      position: absolute;
+      left: var(--dot-x);
+      top: var(--dot-y);
+      width: 22px;
+      height: 22px;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: var(--ui-accent);
+      box-shadow:
+        0 0 0 12px var(--ui-accent-soft),
+        0 0 0 24px rgba(255,255,255,0.035),
+        0 0 32px var(--ui-accent),
+        0 0 80px var(--ui-accent-soft);
+      transition: left 0.55s ease, top 0.55s ease, background 0.4s ease, box-shadow 0.4s ease;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .highlight-line {
+      position: absolute;
+      left: var(--dot-x);
+      top: var(--dot-y);
+      width: 160px;
+      height: 2px;
+      transform-origin: left center;
+      transform: translate(10px, -50%);
+      background: linear-gradient(90deg, var(--ui-accent), rgba(255,255,255,0));
+      transition: left 0.55s ease, top 0.55s ease, background 0.4s ease;
+      z-index: 3;
+      pointer-events: none;
+      opacity: 0.9;
+    }
+
+    .callout-box {
+      position: absolute;
+      left: calc(var(--dot-x) + 120px);
+      top: calc(var(--dot-y) - 10px);
+      transform: translateY(-50%);
+      width: min(220px, 34vw);
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(8,11,9,0.9);
+      border: 1px solid var(--ui-line);
+      color: #e5efe3;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.35);
+      transition: left 0.55s ease, top 0.55s ease, border-color 0.35s ease;
+      z-index: 4;
+      backdrop-filter: blur(6px);
+    }
+
+    .callout-label {
       display: inline-block;
-      padding: 8px 18px;
-      color: #c6fa67;
-      background: #21341d;
-      border-radius: 30px;
-      font-size: 12px;
+      color: var(--ui-accent);
+      font-size: 11px;
+      font-weight: 800;
       letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
     }
 
-    h1 {
-      font-size: clamp(40px, 7vw, 72px);
-      margin: 25px 0 12px;
-    }
-
-    h1 span {
-      color: #c6fa67;
-    }
-
-    p {
-      color: #a9bea5;
-      line-height: 1.9;
+    .callout-title {
       font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      line-height: 1.1;
     }
 
-    .success {
-      margin-top: 35px;
+    .callout-text {
+      color: #adc0b1;
+      font-size: 13px;
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    .scatter-subpanel {
+      margin-top: 24px;
+      border: 1px solid var(--ui-line);
+      border-radius: 22px;
       padding: 18px;
-      border: 1px solid #4e793e;
-      border-radius: 12px;
-      color: #c6fa67;
-      font-size: 17px;
+      background: rgba(255,255,255,0.03);
     }
 
-    footer {
-      margin-top: 35px;
-      color: #698666;
-      font-size: 12px;
-      letter-spacing: 3px;
+    .scatter-tabs {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .tab-chip {
+      text-align: center;
+      padding: 10px 8px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.035);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: #c7d4c5;
+      font-size: 13px;
+      font-weight: 600;
+      transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    }
+
+    .tab-chip.active {
+      background: var(--ui-accent-soft);
+      border-color: rgba(255,255,255,0.08);
+      color: #fff;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+    }
+
+    .scatter-description {
+      min-height: 110px;
+    }
+
+    .scatter-description h3 {
+      margin: 0 0 10px;
+      font-size: 24px;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .scatter-description p {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.82;
+      color: var(--muted);
+    }
+
+    .progress-rail {
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      overflow: hidden;
+      margin-top: 18px;
+    }
+
+    .progress-fill {
+      width: 25%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--ui-accent), rgba(255,255,255,0.92));
+      transition: width 0.3s ease, background 0.35s ease;
+    }
+
+    .wire-emphasis {
+      margin-top: 22px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .wire-alert {
+      padding: 15px 16px;
+      border-radius: 16px;
+      background: rgba(255,75,75,0.08);
+      border: 1px solid rgba(255,95,95,0.24);
+      color: #ffe4e4;
+      font-size: 15px;
+      line-height: 1.72;
+    }
+
+    .footer-note {
+      color: #839584;
+      font-size: 14px;
+      line-height: 1.7;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 1100px) {
+      .page-shell {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+
+      .visual-col { order: -1; }
+
+      .sticky-wrap {
+        position: relative;
+        top: 0;
+        min-height: auto;
+      }
+
+      .step,
+      .step.scatter-step { min-height: auto; padding: 36px 0; }
+
+      .image-stage { min-height: 580px; }
+      .panel-image { width: 78%; }
+    }
+
+    @media (max-width: 760px) {
+      .page-shell { width: calc(100% - 24px); padding-top: 18px; }
+      .copy-card { padding: 22px 20px; border-radius: 22px; }
+      .visual-frame { padding: 18px; border-radius: 24px; }
+      .panel-image { width: 100%; max-width: 360px; }
+      .image-stage { min-height: 490px; }
+      .callout-box {
+        width: min(180px, 48vw);
+        left: auto;
+        right: 14px;
+        top: auto;
+        bottom: 12px;
+        transform: none;
+      }
+      .highlight-line {
+        width: 100px;
+      }
+      .copy-card p { font-size: 15px; }
+      .scatter-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
   </style>
 </head>
-
 <body>
-  <div class="card">
-    <div class="badge">BLENDER ADD-ON</div>
+  <div class="page-shell">
+    <div class="story-col">
+      <section class="step intro-step" data-step="intro">
+        <div class="copy-card">
+          <div class="eyebrow">Surface Pencil — Scroll Story Demo</div>
+          <h1>Guide the eye.<br><span class="accent">Explain the tool.</span></h1>
+          <p>
+            This is a test showcase for a more cinematic Surface Pencil landing page.
+            As the user scrolls, the interface panel stays in view, a live marker moves
+            to the relevant control, and each feature is explained in sequence.
+          </p>
+          <p>
+            In this first prototype, we focus on three major moments: <strong>Source Meshes</strong>,
+            the <strong>four scatter modes</strong>, and the dramatic <strong>Wire Box Preview</strong> section.
+          </p>
+          <div class="feature-list">
+            <div class="feature-pill"><span class="bullet"></span> Sticky interface panel with animated callouts</div>
+            <div class="feature-pill"><span class="bullet"></span> Smooth image rotation and motion while scrolling</div>
+            <div class="feature-pill"><span class="bullet"></span> Accent color shift from green to red for Wire Box Preview</div>
+          </div>
+        </div>
+      </section>
 
-    <h1>Surface <span>Pencil.</span></h1>
+      <section class="step source-step" data-step="source">
+        <div class="copy-card">
+          <div class="mini-badge">Step 01 — Source Meshes</div>
+          <h2>Start with your <span class="accent">source meshes.</span></h2>
+          <p>
+            Choose one or more mesh sources and define how much influence each one should have.
+            This is the heart of the system: instead of manually duplicating objects, you decide
+            what gets scattered and how much of each source appears.
+          </p>
+          <p>
+            The independent <strong>Amount</strong> value for every source makes it easy to blend different
+            assets together and build more organic, less repetitive results.
+          </p>
+        </div>
+      </section>
 
-    <p>
-      A powerful and flexible scattering tool
-      designed for Blender artists.
-    </p>
+      <section class="step scatter-step" data-step="scatter">
+        <div class="copy-card scatter-card">
+          <div class="mini-badge">Step 02 — Four Scatter Modes</div>
+          <h2>One tool.<br><span class="accent">Four ways to draw.</span></h2>
+          <p>
+            Surface Pencil gives you multiple ways to define where assets should appear.
+            As you continue to scroll, the highlight travels across the mode buttons and the
+            explanation updates from <strong>Area</strong> to <strong>Path</strong>, <strong>Brush</strong>, and finally <strong>Whole Mesh</strong>.
+          </p>
 
-    <div class="success">
-      ✓ Website is working successfully!
+          <div class="scatter-subpanel">
+            <div class="scatter-tabs">
+              <div class="tab-chip" data-tab="0">Area</div>
+              <div class="tab-chip" data-tab="1">Path</div>
+              <div class="tab-chip" data-tab="2">Brush</div>
+              <div class="tab-chip" data-tab="3">Whole Mesh</div>
+            </div>
+
+            <div class="scatter-description">
+              <h3 id="scatter-title">Area</h3>
+              <p id="scatter-text">
+                Define a custom region on the surface and fill only that zone with scattered assets.
+              </p>
+            </div>
+
+            <div class="progress-rail"><div class="progress-fill" id="scatter-progress"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="step wire-step" data-step="wire">
+        <div class="copy-card">
+          <div class="mini-badge">Step 03 — Wire Box Preview</div>
+          <h2>Stay fast.<br><span class="accent">Preview light.</span></h2>
+          <p>
+            When scene density rises, <strong>Wire Box Preview</strong> helps you keep the viewport manageable.
+            It offers a lighter visual representation so you can continue working, iterating, and placing
+            assets without carrying the full display cost of every instance.
+          </p>
+
+          <div class="wire-emphasis">
+            <div class="wire-alert">
+              <strong>Red Mode Highlight:</strong> the page theme shifts to match the UI button,
+              creating a stronger contrast and drawing attention to this performance-focused feature.
+            </div>
+            <div class="wire-alert">
+              This section is ideal for showing how Surface Pencil remains practical not only for placement,
+              but also for keeping complex environments easier to navigate while you build them.
+            </div>
+          </div>
+
+          <div class="footer-note">
+            If you like this direction, the next step is expanding the same scrollytelling system to cover
+            distribution filters, transform variation, camera performance, Face Camera, and interface language support.
+          </div>
+        </div>
+      </section>
     </div>
 
-    <p>
-      Our official Surface Pencil showcase
-      is coming soon.
-    </p>
+    <div class="visual-col">
+      <div class="sticky-wrap">
+        <div class="visual-frame" id="visual-frame">
+          <div class="visual-topbar">
+            <div class="left">
+              <span class="dot-ui"></span>
+              <span class="dot-ui"></span>
+              <span class="dot-ui"></span>
+            </div>
+            <div class="right">
+              <span class="window-pill" id="stage-pill">Intro Overview</span>
+            </div>
+          </div>
 
-    <footer>CREATED BY ARSHA FLORA</footer>
+          <div class="image-stage" id="image-stage">
+            <div class="panel-image" id="panel-image">
+              <img src="assets/surface-pencil-panel.png" alt="Surface Pencil interface panel" />
+            </div>
+
+            <div class="highlight-line" id="highlight-line"></div>
+            <div class="highlight-dot" id="highlight-dot"></div>
+
+            <div class="callout-box" id="callout-box">
+              <div class="callout-label" id="callout-label">Overview</div>
+              <div class="callout-title" id="callout-title">Surface Pencil</div>
+              <p class="callout-text" id="callout-text">
+                Scroll down to explore this first animated UI storytelling prototype.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <script>
+    const body = document.body;
+    const panelImage = document.getElementById('panel-image');
+    const dot = document.getElementById('highlight-dot');
+    const line = document.getElementById('highlight-line');
+    const pill = document.getElementById('stage-pill');
+    const calloutLabel = document.getElementById('callout-label');
+    const calloutTitle = document.getElementById('callout-title');
+    const calloutText = document.getElementById('callout-text');
+    const scatterTitle = document.getElementById('scatter-title');
+    const scatterText = document.getElementById('scatter-text');
+    const scatterProgress = document.getElementById('scatter-progress');
+    const scatterTabs = document.querySelectorAll('.tab-chip');
+    const introStep = document.querySelector('.intro-step');
+    const sourceStep = document.querySelector('.source-step');
+    const scatterStep = document.querySelector('.scatter-step');
+    const wireStep = document.querySelector('.wire-step');
+
+    const scatterModes = [
+      {
+        label: 'Mode 01',
+        title: 'Area',
+        text: 'Draw a closed region directly on the surface and fill only that area with scattered assets.',
+        dotX: '18%',
+        dotY: '33.7%',
+        pill: 'Scatter Mode — Area'
+      },
+      {
+        label: 'Mode 02',
+        title: 'Path',
+        text: 'Lay out assets along a line or route. Perfect for trails, borders, and directional flows.',
+        dotX: '32.5%',
+        dotY: '33.7%',
+        pill: 'Scatter Mode — Path'
+      },
+      {
+        label: 'Mode 03',
+        title: 'Brush',
+        text: 'Paint assets freely with an adjustable radius, giving you an intuitive and expressive workflow.',
+        dotX: '49%',
+        dotY: '33.7%',
+        pill: 'Scatter Mode — Brush'
+      },
+      {
+        label: 'Mode 04',
+        title: 'Whole Mesh',
+        text: 'Cover the entire selected surface in a single move when you want immediate full-area scattering.',
+        dotX: '72.5%',
+        dotY: '33.7%',
+        pill: 'Scatter Mode — Whole Mesh'
+      }
+    ];
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function setDot(x, y) {
+      document.documentElement.style.setProperty('--dot-x', x);
+      document.documentElement.style.setProperty('--dot-y', y);
+    }
+
+    function setTilt(x, y, z) {
+      document.documentElement.style.setProperty('--img-tilt-x', x + 'deg');
+      document.documentElement.style.setProperty('--img-tilt-y', y + 'deg');
+      document.documentElement.style.setProperty('--img-tilt-z', z + 'deg');
+    }
+
+    function updateCallout(label, title, text, pillText) {
+      calloutLabel.textContent = label;
+      calloutTitle.textContent = title;
+      calloutText.textContent = text;
+      pill.textContent = pillText;
+    }
+
+    function activateScatter(index) {
+      const mode = scatterModes[index];
+      setDot(mode.dotX, mode.dotY);
+      updateCallout(mode.label, mode.title, mode.text, mode.pill);
+      scatterTitle.textContent = mode.title;
+      scatterText.textContent = mode.text;
+      scatterProgress.style.width = `${(index + 1) * 25}%`;
+      scatterTabs.forEach((tab, i) => tab.classList.toggle('active', i === index));
+    }
+
+    function nearestStep() {
+      const steps = [introStep, sourceStep, scatterStep, wireStep];
+      const viewportCenter = window.innerHeight * 0.48;
+      let active = introStep;
+      let minDistance = Infinity;
+
+      steps.forEach(step => {
+        const rect = step.getBoundingClientRect();
+        const center = rect.top + rect.height / 2;
+        const distance = Math.abs(center - viewportCenter);
+        if (distance < minDistance) {
+          minDistance = distance;
+          active = step;
+        }
+      });
+
+      return active;
+    }
+
+    function updateScene() {
+      const active = nearestStep();
+      body.classList.remove('wire-mode');
+
+      if (active === introStep) {
+        setDot('47%', '10.5%');
+        setTilt(0, 0, 0);
+        updateCallout(
+          'Overview',
+          'Surface Pencil',
+          'Scroll down to explore this first animated UI storytelling prototype.',
+          'Intro Overview'
+        );
+        scatterTabs.forEach(tab => tab.classList.remove('active'));
+        scatterProgress.style.width = '0%';
+      }
+
+      if (active === sourceStep) {
+        setDot('48%', '18.4%');
+        setTilt(-4, 8, -2);
+        updateCallout(
+          'Step 01',
+          'Source Meshes',
+          'Pick one or more source objects and control the contribution of each source independently.',
+          'Source Meshes'
+        );
+      }
+
+      if (active === scatterStep) {
+        const rect = scatterStep.getBoundingClientRect();
+        const progress = clamp((window.innerHeight * 0.55 - rect.top) / (rect.height - window.innerHeight * 0.35), 0, 1);
+        const subIndex = clamp(Math.floor(progress * 4), 0, 3);
+        setTilt(-7 + subIndex * 1.8, 10 - subIndex * 2, -3 + subIndex * 1.4);
+        activateScatter(subIndex);
+      }
+
+      if (active === wireStep) {
+        body.classList.add('wire-mode');
+        setDot('51%', '42.1%');
+        setTilt(-2, 2, -1);
+        updateCallout(
+          'Step 03',
+          'Wire Box Preview',
+          'Switch to a lighter preview mode to keep the viewport cleaner and more responsive while working.',
+          'Wire Box Preview'
+        );
+      }
+    }
+
+    window.addEventListener('scroll', updateScene, { passive: true });
+    window.addEventListener('resize', updateScene);
+    updateScene();
+  </script>
 </body>
 </html>
